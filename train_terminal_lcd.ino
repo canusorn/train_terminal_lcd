@@ -1,10 +1,17 @@
 /*
-  // ce_pin  (RST):  4
-  // sck_pin (CLK):  5
-  // io_pin  (DAT):  6
+  RTC real time clock DS1302
+   ce_pin  (RST): -> 4
+   sck_pin (CLK): -> 5
+   io_pin  (DAT): -> 6
+
+  LCD 2004
+  SCL -> A5,SCL
+  SDA -> A4,SDA
+  VCC -> 5V
+  GND -> GND
 */
 
-// กำหนดขาเซนเซอร์
+// -------  กำหนดขาเซนเซอร์  ----------
 #define sensor1 8
 #define sensor2 9
 #define sensor3 10
@@ -14,12 +21,12 @@
 #include <Wire.h>
 #include <LiquidCrystal_PCF8574.h>   // LiquidCrystal_PCF8574 by mathertel from library manager
 
-DS1307 rtc;
-//DS1302 rtc;
+//DS1307 rtc;
+DS1302 rtc;
 
 LiquidCrystal_PCF8574 lcd(0x3F);
 
-uint16_t timeleft[5] = {5, 10, 15, 20, 30}; // time to destination in minute from sensor 1 2 3 4 และ ขณะตรวจจับอะไรไม่ได้
+uint16_t timeleft[5] = {5, 10, 15, 20, 30}; // เวลา(นาที)ที่จะถึงจุดหมายขณะตรวจจับได้จากเซนซอร์ 1 2 3 4 และ ขณะตรวจจับอะไรไม่ได้(เริ่มต้น)
 bool state[4];
 bool start = 0;
 DateTime trainA_lasttime;
@@ -31,13 +38,14 @@ void setup() {
   Wire.begin();
   rtc.begin();
   delay(100);
+
   //      สำหรับตั้งเวลาปัจจุบัน
   //    rtc.adjust(DateTime(__DATE__, __TIME__));
 
-  pinMode(13, OUTPUT);  digitalWrite(13, HIGH);
+  //  pinMode(13, OUTPUT);  digitalWrite(13, HIGH);
 
-  lcd.begin(16, 2);  // initialize the lcd
-  //lcd.begin(20, 4);  // initialize the lcd
+  //  lcd.begin(16, 2);  // initialize the lcd
+  lcd.begin(20, 4);  // initialize the lcd
   lcd.noBlink();
   lcd.noCursor();
 
@@ -46,7 +54,6 @@ void setup() {
   pinMode(sensor2, INPUT);
   pinMode(sensor3, INPUT);
   pinMode(sensor4, INPUT);
-
 
 }
 
@@ -74,24 +81,28 @@ void loop() {
   } else if (!digitalRead(sensor1) && state[0]) { // จับขอบขาลงเซนเซอร์
     state[0] = false;
     DateTime future(now + (timeleft[0] * 60));
+    Serial.println("Sensor1 Detect\tEst : " + String(timeleft[0]) +  "min\tTime : " + String(future.format(buf)));
     LCDdisplay(String(timeleft[0]), future.format(buf));
   } else if (digitalRead(sensor2)) {              // เซนเซอร์2ตรวจจับได้
     state[1] = true;
   } else if (!digitalRead(sensor2) && state[1]) { // จับขอบขาลงเซนเซอร์
     state[1] = false;
     DateTime future(now + (timeleft[1] * 60));
+    Serial.println("Sensor2 Detect\tEst : " + String(timeleft[1]) +  "min\tTime : " + String(future.format(buf)));
     LCDdisplay(String(timeleft[1]), future.format(buf));
   } else if (digitalRead(sensor3)) {              // เซนเซอร์3ตรวจจับได้
     state[2] = true;
   } else if (!digitalRead(sensor3) && state[2]) { // จับขอบขาลงเซนเซอร์
     state[2] = false;
     DateTime future(now + (timeleft[2] * 60));
+    Serial.println("Sensor3 Detect\tEst : " + String(timeleft[2]) +  "min\tTime : " + String(future.format(buf)));
     LCDdisplay(String(timeleft[2]), future.format(buf));
   } else if (digitalRead(sensor4)) {              // เซนเซอร์4ตรวจจับได้
     state[3] = true;
   } else if (!digitalRead(sensor4) && state[3]) { // จับขอบขาลงเซนเซอร์
     state[3] = false;
     DateTime future(now + (timeleft[3] * 60));
+    Serial.println("Sensor4 Detect\tEst : " + String(timeleft[3]) +  "min\tTime : " + String(future.format(buf)));
     LCDdisplay(String(timeleft[3]), future.format(buf));
   }
 
@@ -105,7 +116,6 @@ void loop() {
 
 void LCDdisplay(String est, String time) {
   uint8_t column[3] = {0, 4, 11};   // กำหนดขนาดตารางแต่ละ column
-  Serial.println("start time : " + time);
 
   lcd.setBacklight(127);
   lcd.home();
