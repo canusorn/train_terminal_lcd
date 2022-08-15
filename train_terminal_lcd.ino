@@ -24,7 +24,7 @@
 //DS1307 rtc;
 DS1302 rtc;
 
-LiquidCrystal_PCF8574 lcd(0x3F);
+LiquidCrystal_PCF8574 lcd(0x27);
 
 uint16_t timeleft[5] = {5, 10, 15, 20, 30}; // เวลา(นาที)ที่จะถึงจุดหมายขณะตรวจจับได้จากเซนซอร์ 1 2 3 4 และ ขณะตรวจจับอะไรไม่ได้(เริ่มต้น)
 bool state[4];
